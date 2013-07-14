@@ -2,7 +2,7 @@
 
 library("e1071")			# load the NB library
 
-data(iris)				# load iris data
+data <- iris				# load iris data
 set.seed(1)				# set seed for repeatability
 train.percent <- 0.7		# set the training data size (%)
 
