@@ -35,17 +35,19 @@ CalculateError <- function(prediction, data, testIndices, labelColumn) {
   return(sum(prediction != data[testIndices, labelColumn]) / length(data[testIndices, labelColumn]))
 }
 
-data <- iris										# load iris data
-set.seed(1)											# set seed for repeatability
-max.folds = 10										# set the highest number of folds to test
-max.k = 20											# set the highest number of k-nearest neighbors
-dataLabelColumn = 5									# identify the column in data that holds the labels	
-data.randomized.index <- sample(1:nrow(data), nrow(data))			# Create a randomized index for the data, essentially "shuffling" it
-folds.err.rates = data.frame()
+data <- iris									# load iris data
+set.seed(1)										# set seed for repeatability
+max.folds <- 10									# set the highest number of folds to test
+max.k <- 20										# set the highest number of k-nearest neighbors
+dataLabelColumn <- 5								# identify the column in data that holds the labels	
+data.randomized.index <- sample(1:nrow(data), nrow(data))		# Create a randomized index for the data, essentially "shuffling" it
 
 for(j in 2:max.folds){
-  # Try all the different number of folds from 2 to max.folds
   numFolds = j
+  folds.err.rates <- data.frame()						# reset the variable used to store err.rates for this k-folds validation
+  folds.err.rates.mean <- NULL						# reset the variable used to store the mean(err.rates) for this k-folds validation
+
+  # Try all the different number of folds from 2 to max.folds
   for(i in 1:numFolds){
     # Run n-fold cross-validation for numFolds
     # Calculate generalization error for numFolds
@@ -57,8 +59,11 @@ for(j in 2:max.folds){
       prediction <- knn.model
       err.rates <- append(err.rates, CalculateError(prediction, data, test.index, dataLabelColumn))  # calculate the error rate using the KNN model
     }
-    folds.err.rates <- rbind(folds.err.rates,err.rates)  # store all the error rates here
+    folds.err.rates <- rbind(folds.err.rates,err.rates)		# store all the error rates here
   }
+  colnames(folds.err.rates) <- paste("k=",c(1:20))			# label each column to indicate the k used
   print(paste("KNN mean error rates where k is from 1 to", max.k, "and there are", j, "folds."))
-  print(colMeans(folds.err.rates))  # take the mean of the error rates across all folds for each k
+  folds.err.rates.mean <- as.matrix(colMeans(folds.err.rates))	# take the mean of the error rates for this k-folds validation
+  print(folds.err.rates.mean)  
+  print(paste("Optimal k =",which.min(folds.err.rates.mean),"for",j,"folds."))	# determine optimal k for this k-folds validation
 }
